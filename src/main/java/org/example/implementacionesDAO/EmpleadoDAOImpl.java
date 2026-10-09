@@ -61,7 +61,11 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
             pst.setString(5, empleado.getDni());
             pst.setString(6, empleado.getFecha_alta().toString());
             pst.setDouble(7, empleado.getSalario());
-            pst.setDouble(8, empleado.getComision());
+            if (empleado.getComision() == null) {
+                pst.setNull(8, java.sql.Types.DOUBLE);
+            } else {
+                pst.setDouble(8, empleado.getComision());
+            }
             pst.setInt(9, empleado.getIdDep());
 
             pst.executeUpdate();
@@ -77,7 +81,7 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
         List<Empleado> lista = new ArrayList<>();
 
         String sql = """
-                SELECT nombre,oficio,salario FROM Empleado
+                SELECT nombre,oficio,salario FROM Empleados
                 """;
 
         try (Connection conex = databaseConnection.getConnection();
@@ -108,7 +112,7 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
 
         String sql = """
                 SELECT* FROM Empleados e
-                JOIN Departamento d
+                JOIN Departamentos d
                 ON e.id_dep=d.id
                 WHERE d.nombre=?
                 """;
@@ -129,7 +133,8 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
                             rs.getString("dni"),
                             LocalDate.parse(rs.getString("fecha_alt")),
                             rs.getDouble("salario"),
-                            rs.getDouble("comision"),
+                            rs.getObject("comision") == null
+                                    ? null : rs.getDouble("comision"),
                             rs.getInt("id_dep")
                     );
 
@@ -176,7 +181,8 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
                             rs.getString("dni"),
                             LocalDate.parse(rs.getString("fecha_alt")),
                             rs.getDouble("salario"),
-                            rs.getDouble("comision"),
+                            rs.getObject("comision") == null
+                                    ? null : rs.getDouble("comision"),
                             rs.getInt("id_dep")
                     );
 
@@ -219,7 +225,8 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
                         rs.getString("dni"),
                         LocalDate.parse(rs.getString("fecha_alt")),
                         rs.getDouble("salario"),
-                        rs.getDouble("comision"),
+                        rs.getObject("comision") == null
+                                ? null : rs.getDouble("comision"),
                         rs.getInt("id_dep")
                 );
 
@@ -257,7 +264,8 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
                         rs.getString("dni"),
                         LocalDate.parse(rs.getString("fecha_alt")),
                         rs.getDouble("salario"),
-                        rs.getDouble("comision"),
+                        rs.getObject("comision") == null
+                                ? null : rs.getDouble("comision"),
                         rs.getInt("id_dep")
                 );
 

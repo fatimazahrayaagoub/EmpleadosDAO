@@ -8,8 +8,8 @@ public interface DepartamentoDAO {
 
      void crearTabla();
      void insertarDepartamentos(Departamento departamento);
-     List<Departamento>listarDepartamento(Departamento departamento);
-     void modificarLocalidad(String nombre,String localidad);
+     List<Departamento>listarDepartamento();
+     void modificarLocalidad();
      List<Departamento> listarDepartamentoPorLocalidad(String localidad);
 
 

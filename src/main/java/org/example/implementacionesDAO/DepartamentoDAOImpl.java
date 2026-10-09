@@ -4,11 +4,7 @@ import org.example.clases.Departamento;
 import org.example.conexion.DatabaseConnection;
 import org.example.interfasesDAO.DepartamentoDAO;
 
-import javax.swing.text.html.HTMLDocument;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,17 +16,19 @@ public class DepartamentoDAOImpl implements DepartamentoDAO {
         this.databaseConnection = databaseConnection;
     }
 
-    public void crearTabla(){
-        String sql= """
-                CREATE TABLE IF NOT EXISTS Departamentos
+    public void crearTabla() {
+        String sql = """
+                CREATE TABLE IF NOT EXISTS Departamentos(
                 id INTEGER PRIMARY KEY,
                 nombre VARCHAR(15),
                 localidad VARCHAR(15)
+                )
+                
                 
                 """;
 
-        try(Connection conex=databaseConnection.getConnection();
-            Statement st=conex.createStatement()){
+        try (Connection conex = databaseConnection.getConnection();
+             Statement st = conex.createStatement()) {
 
             st.executeUpdate(sql);
 
@@ -39,17 +37,18 @@ public class DepartamentoDAOImpl implements DepartamentoDAO {
         }
     }
 
-    public void insertarDepartamentos(Departamento departamento){
-        String sql= """
+    public void insertarDepartamentos(Departamento departamento) {
+        String sql = """
                 INSERT INTO Departamentos (id,nombre,localidad)
-                VALUES(?.?.?)
+                VALUES(?,?,?)
                 """;
 
-        try (Connection conex=databaseConnection.getConnection();
-             PreparedStatement pst=conex.prepareStatement(sql)){
-            pst.setInt(1,departamento.getId());
-            pst.setString(2,departamento.getNombre());
-            pst.setString(3,departamento.getLocalidad());
+        try (Connection conex = databaseConnection.getConnection();
+             PreparedStatement pst = conex.prepareStatement(sql)) {
+            pst.setInt(1, departamento.getId());
+            pst.setString(2, departamento.getNombre());
+            pst.setString(3, departamento.getLocalidad());
+            pst.executeUpdate();
 
 
         } catch (SQLException e) {
@@ -57,21 +56,87 @@ public class DepartamentoDAOImpl implements DepartamentoDAO {
         }
 
     }
-    public List<Departamento> listarDepartamento(){
-        List<Departamento> lista=new ArrayList<>();
 
-        String sql= """
+    public List<Departamento> listarDepartamento() {
+        List<Departamento> lista = new ArrayList<>();
+
+        String sql = """
                 SELECT*FROM Departamentos
                 """;
 
-        try()
+        try (Connection conex = databaseConnection.getConnection();
+             Statement st = conex.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+
+            while (rs.next()) {
+                Departamento departamento = new Departamento(
+                        rs.getInt("id"),
+                        rs.getString("nombre"),
+                        rs.getString("localidad")
+                );
+                lista.add(departamento);
+
+            }
+
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return lista;
 
     }
-    public void modificarLocalidad(String nombre,String localidad){
+
+    public void modificarLocalidad() {
+        String sql = """
+                UPDATE Departamentos
+                SET localidad = 'Toledo'
+                WHERE nombre = 'Ventas'
+                """;
+
+        try (Connection conex = databaseConnection.getConnection();
+             Statement st = conex.createStatement()) {
+
+            st.executeUpdate(sql);
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
     }
-    public List<Departamento> listarDepartamentoPorLocalidad(String localidad){
+
+    public List<Departamento> listarDepartamentoPorLocalidad(String localidad) {
+        List<Departamento> lista = new ArrayList<>();
+        String sql = """
+                SELECT * FROM Departamentos
+                WHERE localidad=?
+                """;
+        try (Connection conex = databaseConnection.getConnection();
+             PreparedStatement pst = conex.prepareStatement(sql);) {
+
+            pst.setString(1, localidad);
+
+            try (ResultSet rs = pst.executeQuery()) {
+                while (rs.next()) {
+                    Departamento departamento = new Departamento(
+                            rs.getInt("id"),
+                            rs.getString("nombre"),
+                            rs.getString("localidad")
+                    );
+                    lista.add(departamento);
+                }
+
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return lista;
 
     }
-
 }

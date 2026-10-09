@@ -19,7 +19,7 @@ public class Empleado {
     private String dni;
     private LocalDate fecha_alta;
     private double salario;
-    private double comision;
+    private Double comision;
     private int idDep;
 
 
