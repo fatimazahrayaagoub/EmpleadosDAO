@@ -1,6 +1,6 @@
 package org.example.implementacionesDAO;
 
-import org.example.clases.Empleado;
+import org.example.modelo.Empleado;
 import org.example.conexion.DatabaseConnection;
 import org.example.interfasesDAO.EmpleadoDAO;
 
@@ -19,24 +19,28 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
 
 
     @Override
-    public void crearTabla() {
+    public void crearTabla() throws SQLDataException {
+
+
         String sql = """
                 CREATE TABLE IF NOT EXISTS Empleados(
-                id_emp INTEGER PRIMARY KEY,
+                id_emp INT AUTO_INCREMENT PRIMARY KEY,
                 nombre VARCHAR(100),
                 apel VARCHAR(30),
                 oficio VARCHAR(10),
                 dni VARCHAR(9),
                 fecha_alt DATE,
-                salario REAL,
-                comision REAL,
+                salario DOUBLE,
+                comision DOUBLE,
                 id_dep INTEGER,
-                FOREIGN KEY(id_dep) REFERENCES Departamentos
+                FOREIGN KEY(id_dep) REFERENCES Departamentos(id)
                 )
                 """;
         try (Connection conex = databaseConnection.getConnection();
              Statement st = conex.createStatement()) {
+
             st.executeUpdate(sql);
+
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -46,56 +50,77 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
     }
 
     @Override
-    public void insertarEmpleado(Empleado empleado) {
+    public void insertarEmpleado(Empleado empleado) throws SQLDataException{
         String sql = """
-                INSERT INTO Empleados(id_emp, nombre, apel, oficio, dni, fecha_alt, salario, comision, id_dep)
-                VALUES(?,?,?,?,?,?,?,?,?)
-                """;
+        INSERT INTO Empleados
+        (nombre, apel, oficio, dni, fecha_alt, salario, comision, id_dep)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """;
 
         try (Connection conex = databaseConnection.getConnection();
              PreparedStatement pst = conex.prepareStatement(sql)) {
-            pst.setInt(1, empleado.getIdEmp());
-            pst.setString(2, empleado.getNombre());
-            pst.setString(3, empleado.getApel());
-            pst.setString(4, empleado.getOficio());
-            pst.setString(5, empleado.getDni());
-            pst.setString(6, empleado.getFecha_alta().toString());
-            pst.setDouble(7, empleado.getSalario());
-            if (empleado.getComision() == null) {
-                pst.setNull(8, java.sql.Types.DOUBLE);
+
+            pst.setString(1, empleado.getNombre());
+            pst.setString(2, empleado.getApel());
+            pst.setString(3, empleado.getOficio());
+            pst.setString(4, empleado.getDni());
+
+            if (empleado.getFecha_alta() == null) {
+                pst.setNull(5, java.sql.Types.DATE);
             } else {
-                pst.setDouble(8, empleado.getComision());
+                pst.setDate(5, java.sql.Date.valueOf(
+                        empleado.getFecha_alta()
+                ));
             }
-            pst.setInt(9, empleado.getIdDep());
+
+            pst.setDouble(6, empleado.getSalario());
+
+            if (empleado.getComision() == null) {
+                pst.setNull(7, java.sql.Types.DOUBLE);
+            } else {
+                pst.setDouble(7, empleado.getComision());
+            }
+
+            pst.setInt(8, empleado.getIdDep());
 
             pst.executeUpdate();
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
     }
 
+
+
     @Override
-    public List<Empleado> mostrarEmpleado() {
+    public List<Empleado> mostrarEmpleado() throws SQLDataException{
         List<Empleado> lista = new ArrayList<>();
 
         String sql = """
-                SELECT nombre,oficio,salario FROM Empleados
-                """;
+            SELECT * FROM Empleados
+            """;
 
         try (Connection conex = databaseConnection.getConnection();
              Statement st = conex.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
-                Empleado empleado = new Empleado();
-                empleado.setNombre(rs.getString("nombre"));
-                empleado.setOficio(rs.getString("oficio"));
-                empleado.setSalario(rs.getDouble("salario"));
+                Empleado empleado = new Empleado(
+                        rs.getInt("id_emp"),
+                        rs.getString("nombre"),
+                        rs.getString("apel"),
+                        rs.getString("oficio"),
+                        rs.getString("dni"),
+                        rs.getDate("fecha_alt") != null
+                                ? rs.getDate("fecha_alt").toLocalDate()
+                                : null,
+                        rs.getDouble("salario"),
+                        rs.getObject("comision") == null
+                                ? null : rs.getDouble("comision"),
+                        rs.getInt("id_dep")
+                );
 
                 lista.add(empleado);
-
             }
 
         } catch (SQLException e) {
@@ -103,11 +128,10 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
         }
 
         return lista;
-
     }
 
     @Override
-    public List<Empleado> empleadoPorDepartamento(String nombreDepartamentp) {
+    public List<Empleado> empleadoPorDepartamento(String nombreDepartamentp) throws SQLDataException {
         List<Empleado> lista = new ArrayList<>();
 
         String sql = """
@@ -152,7 +176,7 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
     }
 
     @Override
-    public List<Empleado> empleadosPorSalario() {
+    public List<Empleado> empleadosPorSalario() throws SQLDataException {
         List<Empleado> lista = new ArrayList<>();
 
 
@@ -202,7 +226,7 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
     }
 
     @Override
-    public List<Empleado> empleadosPorOficio() {
+    public List<Empleado> empleadosPorOficio()  throws SQLDataException{
 
         List<Empleado> lista = new ArrayList<>();
         String sql = """
@@ -243,7 +267,7 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
 
 
     @Override
-    public List<Empleado> empleadosSinComision() {
+    public List<Empleado> empleadosSinComision() throws SQLDataException{
         List<Empleado> lista=new ArrayList<>();
         String sql= """
                 SELECT* FROM Empleados
@@ -281,7 +305,7 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
     }
 
     @Override
-   public double calcularSalarioMedio(){
+    public double calcularSalarioMedio() throws SQLDataException{
 
         Double salarioMedio=0.0;
         String sql= """

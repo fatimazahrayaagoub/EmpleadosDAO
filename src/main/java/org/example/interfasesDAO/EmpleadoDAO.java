@@ -1,25 +1,26 @@
 package org.example.interfasesDAO;
 
-import org.example.clases.Empleado;
+import org.example.modelo.Empleado;
 
+import java.sql.SQLDataException;
 import java.util.List;
 
 public interface EmpleadoDAO {
 
-    void crearTabla();
-    void insertarEmpleado(Empleado empleado);
+    void crearTabla() throws SQLDataException;
+    void insertarEmpleado(Empleado empleado) throws SQLDataException;
 
-    List<Empleado> mostrarEmpleado();
+    List<Empleado> mostrarEmpleado() throws SQLDataException;
 
-    List<Empleado> empleadoPorDepartamento(String nombreDepartamentp);
+    List<Empleado> empleadoPorDepartamento(String nombreDepartamentp) throws SQLDataException;;
 
-    List<Empleado> empleadosPorSalario();
+    List<Empleado> empleadosPorSalario() throws SQLDataException;
 
-    List<Empleado> empleadosPorOficio();
+    List<Empleado> empleadosPorOficio() throws SQLDataException;
 
-    List<Empleado> empleadosSinComision();
+    List<Empleado> empleadosSinComision() throws SQLDataException;
 
-    double calcularSalarioMedio();
+    double calcularSalarioMedio() throws SQLDataException;
 
 
 }

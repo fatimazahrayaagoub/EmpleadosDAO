@@ -1,6 +1,6 @@
 package org.example.implementacionesDAO;
 
-import org.example.clases.Departamento;
+import org.example.modelo.Departamento;
 import org.example.conexion.DatabaseConnection;
 import org.example.interfasesDAO.DepartamentoDAO;
 
@@ -16,10 +16,11 @@ public class DepartamentoDAOImpl implements DepartamentoDAO {
         this.databaseConnection = databaseConnection;
     }
 
-    public void crearTabla() {
+    public void crearTabla() throws SQLDataException {
+
         String sql = """
                 CREATE TABLE IF NOT EXISTS Departamentos(
-                id INTEGER PRIMARY KEY,
+                id INT AUTO_INCREMENT PRIMARY KEY,
                 nombre VARCHAR(15),
                 localidad VARCHAR(15)
                 )
@@ -37,7 +38,7 @@ public class DepartamentoDAOImpl implements DepartamentoDAO {
         }
     }
 
-    public void insertarDepartamentos(Departamento departamento) {
+    public void insertarDepartamentos(Departamento departamento) throws SQLDataException{
         String sql = """
                 INSERT INTO Departamentos (id,nombre,localidad)
                 VALUES(?,?,?)
@@ -57,7 +58,7 @@ public class DepartamentoDAOImpl implements DepartamentoDAO {
 
     }
 
-    public List<Departamento> listarDepartamento() {
+    public List<Departamento> listarDepartamento() throws SQLDataException {
         List<Departamento> lista = new ArrayList<>();
 
         String sql = """
@@ -87,7 +88,7 @@ public class DepartamentoDAOImpl implements DepartamentoDAO {
 
     }
 
-    public void modificarLocalidad() {
+    public void modificarLocalidad() throws SQLDataException{
         String sql = """
                 UPDATE Departamentos
                 SET localidad = 'Toledo'
@@ -105,7 +106,7 @@ public class DepartamentoDAOImpl implements DepartamentoDAO {
 
     }
 
-    public List<Departamento> listarDepartamentoPorLocalidad(String localidad) {
+    public List<Departamento> listarDepartamentoPorLocalidad(String localidad) throws SQLDataException{
         List<Departamento> lista = new ArrayList<>();
         String sql = """
                 SELECT * FROM Departamentos
