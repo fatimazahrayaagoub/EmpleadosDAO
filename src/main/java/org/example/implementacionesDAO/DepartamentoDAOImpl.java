@@ -35,8 +35,7 @@ public class DepartamentoDAOImpl implements DepartamentoDAO {
 
     @Override
     public void insertarDepartamentos(Departamento departamento) throws SQLDataException {
-        // Si el ID es autoincremental, es mejor no forzarlo en el INSERT a menos que sea necesario.
-        // Si necesitas insertar el ID manual, asegúrate de quitar AUTO_INCREMENT en la tabla.
+
         String sql = """
                 INSERT INTO Departamentos (id, nombre, localidad)
                 VALUES (?, ?, ?)

@@ -121,7 +121,6 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
         return lista;
     }
 
-    // Modificado para recibir el salario por parámetro en lugar de usar Scanner en el DAO
     @Override
     public List<Empleado> empleadosPorSalario(double salario) throws SQLDataException {
         List<Empleado> lista = new ArrayList<>();

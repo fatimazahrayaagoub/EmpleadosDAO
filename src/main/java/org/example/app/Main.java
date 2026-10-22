@@ -7,6 +7,8 @@ import org.example.implementacionesDAO.DepartamentoDAOImpl;
 import org.example.implementacionesDAO.EmpleadoDAOImpl;
 import org.example.interfasesDAO.DepartamentoDAO;
 import org.example.interfasesDAO.EmpleadoDAO;
+import org.example.service.ServiceDepartamento;
+import org.example.service.ServiceEmpleado;
 
 import java.sql.SQLDataException;
 import java.time.LocalDate;
@@ -18,11 +20,13 @@ public class Main {
 
         DatabaseConnection databaseConnection = new DatabaseConnection();
 
-        DepartamentoDAO departamentoDAO =
-                new DepartamentoDAOImpl(databaseConnection);
+        // Inicializar DAOs
+        DepartamentoDAO departamentoDAO = new DepartamentoDAOImpl(databaseConnection);
+        EmpleadoDAO empleadoDAO = new EmpleadoDAOImpl(databaseConnection);
 
-        EmpleadoDAO empleadoDAO =
-                new EmpleadoDAOImpl(databaseConnection);
+        // Inicializar Servicios
+        ServiceDepartamento serviceDepartamento = new ServiceDepartamento(departamentoDAO);
+        ServiceEmpleado serviceEmpleado = new ServiceEmpleado(empleadoDAO, serviceDepartamento);
 
 
         // ==================== DEPARTAMENTOS ====================
@@ -39,18 +43,19 @@ public class Main {
             Departamento departamento2 = new Departamento(20, "Ventas", "Sevilla");
             Departamento departamento3 = new Departamento(30, "Contabilidad", "Valencia");
 
-            departamentoDAO.insertarDepartamentos(departamento1);
-            departamentoDAO.insertarDepartamentos(departamento2);
-            departamentoDAO.insertarDepartamentos(departamento3);
+            // Se inserta a través del Service para validar reglas de negocio y duplicados
+            serviceDepartamento.insertarDepartamento(departamento1);
+            serviceDepartamento.insertarDepartamento(departamento2);
+            serviceDepartamento.insertarDepartamento(departamento3);
 
-            System.out.println("========== DEPARTAMENTOS INSERTADOS ==========");
-        } catch (SQLDataException e) {
-            throw new RuntimeException(e);
+            System.out.println("========== DEPARTAMENTOS INSERTADOS (VALIDADOS) ==========");
+        } catch (Exception e) {
+            System.err.println("Error al insertar departamento: " + e.getMessage());
         }
 
         try {
             System.out.println("========== LISTA DE DEPARTAMENTOS ==========");
-            List<Departamento> departamentos = departamentoDAO.listarDepartamento();
+            List<Departamento> departamentos = serviceDepartamento.listarDepartamentos();
             for (Departamento departamento : departamentos) {
                 System.out.println(departamento);
             }
@@ -99,25 +104,26 @@ public class Main {
             Empleado empleado9 = new Empleado(9, "Sofia", "Romero", "CONTADOR", "90123456J", LocalDate.of(2023, 5, 16), 1800, 200.0, 30);
             Empleado empleado10 = new Empleado(10, "David", "Moreno", "ADMIN", "01234567K", LocalDate.of(2024, 1, 8), 1400, null, 10);
 
-            empleadoDAO.insertarEmpleado(empleado1);
-            empleadoDAO.insertarEmpleado(empleado2);
-            empleadoDAO.insertarEmpleado(empleado3);
-            empleadoDAO.insertarEmpleado(empleado4);
-            empleadoDAO.insertarEmpleado(empleado5);
-            empleadoDAO.insertarEmpleado(empleado6);
-            empleadoDAO.insertarEmpleado(empleado7);
-            empleadoDAO.insertarEmpleado(empleado8);
-            empleadoDAO.insertarEmpleado(empleado9);
-            empleadoDAO.insertarEmpleado(empleado10);
+            // Se inserta a través del Service para validar DNI, salarios, existencia de dep., etc.
+            serviceEmpleado.insertarEmpleado(empleado1);
+            serviceEmpleado.insertarEmpleado(empleado2);
+            serviceEmpleado.insertarEmpleado(empleado3);
+            serviceEmpleado.insertarEmpleado(empleado4);
+            serviceEmpleado.insertarEmpleado(empleado5);
+            serviceEmpleado.insertarEmpleado(empleado6);
+            serviceEmpleado.insertarEmpleado(empleado7);
+            serviceEmpleado.insertarEmpleado(empleado8);
+            serviceEmpleado.insertarEmpleado(empleado9);
+            serviceEmpleado.insertarEmpleado(empleado10);
 
-            System.out.println("========== EMPLEADOS INSERTADOS ==========");
-        } catch (SQLDataException e) {
-            throw new RuntimeException(e);
+            System.out.println("========== EMPLEADOS INSERTADOS (VALIDADOS) ==========");
+        } catch (Exception e) {
+            System.err.println("Error al insertar empleado: " + e.getMessage());
         }
 
         try {
             System.out.println("========== LISTA DE EMPLEADOS ==========");
-            List<Empleado> empleados = empleadoDAO.mostrarEmpleado();
+            List<Empleado> empleados = serviceEmpleado.listarEmpleados();
             for (Empleado empleado : empleados) {
                 System.out.println(empleado);
             }
@@ -137,7 +143,6 @@ public class Main {
 
         try {
             System.out.println("========== EMPLEADOS POR SALARIO (Ej: 2200.0) ==========");
-            // Se pasa el salario directamente por parámetro en lugar de usar Scanner en el DAO
             List<Empleado> empleadosPorSalario = empleadoDAO.empleadosPorSalario(2200.0);
             for (Empleado empleado : empleadosPorSalario) {
                 System.out.println(empleado);
@@ -148,7 +153,6 @@ public class Main {
 
         try {
             System.out.println("========== EMPLEADOS DEL OFICIO ANALISTA ==========");
-            // Se pasa el oficio por parámetro de forma dinámica
             List<Empleado> empleadosPorOficio = empleadoDAO.empleadosPorOficio("ANALISTA");
             for (Empleado empleado : empleadosPorOficio) {
                 System.out.println(empleado);
